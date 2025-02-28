@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "db": "pnpm prisma migrate reset --force"
+    "db": "pnpm prisma migrate reset --force",
+    "seed": "ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +18,10 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@prisma/client": "^6.4.1",
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "8.5.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.5",
     "eslint": "^9.21.0",
@@ -28,8 +32,12 @@
     "typescript-eslint": "^8.25.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "8.5.1",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.9"
   },
@@ -37,6 +45,7 @@
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
+      "bcrypt",
       "esbuild",
       "prisma"
     ]
