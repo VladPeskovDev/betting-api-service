@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db": "pnpm prisma migrate reset --force"
   },
   "keywords": [],
   "author": "",
@@ -13,10 +17,14 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@prisma/client": "^6.4.1",
+    "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.5",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.0.2",
     "globals": "^16.0.0",
     "prisma": "^6.4.1",
+    "ts-node": "^10.9.2",
     "typescript-eslint": "^8.25.0"
   },
   "dependencies": {
