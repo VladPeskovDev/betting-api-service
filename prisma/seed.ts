@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   // 1) Создаём/обновляем пользователя Vladislav
-  await prisma.user.upsert({
-    where: { email: "Vladpeskovdev@gmail.com" }, // ищем по уникальному полю email
-    update: {}, // если нашли, ничего не обновляем
+  const vladislav = await prisma.user.upsert({
+    where: { email: "Vladpeskovdev@gmail.com" },
+    update: {},
     create: {
       username: "Vladislav",
       email: "Vladpeskovdev@gmail.com",
@@ -14,16 +14,48 @@ async function main() {
   });
 
   // 2) Создаём/обновляем "admin"
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: "admin@example.com" },
-    update: {}, // можно что-то обновлять
+    update: {},
     create: {
       username: "admin",
       email: "admin@example.com",
     },
   });
 
-  console.log("Сиды применены/обновлены без дублирования!");
+  // 3) Добавляем запись в ExternalApiAccount для Vladislav (externalUserId = "12")
+  await prisma.externalApiAccount.upsert({
+    where: { userId: vladislav.id },
+    update: {
+      externalUserId: "12",
+      externalSecretKey: "6b34fe24ac2ff8103f6fce1f0da2ef57",
+      isActive: true,
+    },
+    create: {
+      userId: vladislav.id,
+      externalUserId: "12",
+      externalSecretKey: "6b34fe24ac2ff8103f6fce1f0da2ef57",
+      isActive: true,
+    },
+  });
+
+  // 4) Добавляем запись в ExternalApiAccount для admin (externalUserId = "13")
+  await prisma.externalApiAccount.upsert({
+    where: { userId: admin.id },
+    update: {
+      externalUserId: "12", 
+      externalSecretKey: "6b34fe24ac2ff8103f6fce1f0da2ef57",
+      isActive: true,
+    },
+    create: {
+      userId: admin.id,
+      externalUserId: "12",
+      externalSecretKey: "6b34fe24ac2ff8103f6fce1f0da2ef57",
+      isActive: true,
+    },
+  });
+
+  console.log("Сиды успешно применены!");
 }
 
 main()
