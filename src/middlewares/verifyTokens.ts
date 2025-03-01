@@ -4,40 +4,37 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ * Проверяем JWT-токен из заголовка Authorization: Bearer ...
+ */
 export const verifyAccessToken = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) throw new Error("No token provided");
+    if (!authHeader) {
+      throw new Error("No token provided");
+    }
 
+    // Формат "Bearer <token>"
     const accessToken = authHeader.split(" ")[1];
+    if (!accessToken) {
+      throw new Error("No token provided");
+    }
+
+    // Расшифровываем токен
     const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET!);
 
+    // Сохраняем данные пользователя в res.locals.user
+    // (чтобы контроллер знал, какой userId)
     res.locals.user = decoded;
-    return next();
-  } catch (error) {
-    console.log("Invalid access token", error);
-    return res.sendStatus(403);
-  }
-};
 
-export const verifyRefreshToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) throw new Error("No refresh token provided");
-
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
-    res.locals.user = decoded;
-    return next();
+    next();
   } catch (error) {
-    console.log("Invalid refresh token", error);
-    return res.clearCookie("refreshToken").sendStatus(401);
+    console.log("Invalid access token:", error);
+    // При невалидном токене возвращаем 403 (или 401)
+    res.sendStatus(403);
   }
 };
