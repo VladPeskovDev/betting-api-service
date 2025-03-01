@@ -23,17 +23,13 @@ export async function authTest(req: Request, res: Response): Promise<void> {
  */
 export async function getBetTest(req: Request, res: Response): Promise<void> {
   try {
-    const { user_id } = req.body; // или req.query
-    if (!user_id) {
-      res.status(400).json({ error: "user_id is required" });
-      return;
-    }
-    const result = await InternalService.testGetBet(user_id);
+    const result = await InternalService.testGetBet();
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message });
   }
 }
+
 
 /**
  * POST /api/internal/bet

@@ -10,9 +10,13 @@ export async function testAuth(user_id: string) {
 /**
  * 2) Тест получения рекомендуемой ставки: GET /api/internal/bet
  */
-export async function testGetBet(user_id: string) {
-  return { success: true, external_response: await callExternalApi("GET", "/bets/recommended", { user_id }) };
+export async function testGetBet() {
+  return {
+    success: true,
+    external_response: await callExternalApi("GET", "/bet"),
+  };
 }
+
 
 /**
  * 3) Тест размещения ставки: POST /api/internal/bet

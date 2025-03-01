@@ -19,32 +19,33 @@ function createSignature(body: Record<string, unknown>): string {
 /**
  * Универсальная отправка запросов во внешний API
  */
-async function callExternalApi(method: "GET" | "POST", endpoint: string, data?: Record<string, unknown>) {
+async function callExternalApi(
+  method: "GET" | "POST",
+  endpoint: string,
+  data: Record<string, unknown> = {}
+) {
   try {
-    const safeData: Record<string, unknown> = data || {}; 
-    const signature = createSignature(safeData);
+    const signature = createSignature(method === "GET" ? {} : data); // Только для `POST`!
+
     const headers = {
       "user-id": USER_ID,
       "x-signature": signature,
       "Content-Type": "application/json",
     };
 
-    console.log("🔹 Отправляем запрос в API:", { method, url: `${BET_API_BASE_URL}${endpoint}`, headers, data });
+    console.log("Отправляем запрос в API:", { method, url: `${BET_API_BASE_URL}${endpoint}`, headers });
 
     let response;
     if (method === "GET") {
-      response = await axios.get(`${BET_API_BASE_URL}${endpoint}`, {
-        params: safeData,
-        headers,
-      });
+      response = await axios.get(`${BET_API_BASE_URL}${endpoint}`, { headers });
     } else {
-      response = await axios.post(`${BET_API_BASE_URL}${endpoint}`, safeData, { headers });
+      response = await axios.post(`${BET_API_BASE_URL}${endpoint}`, data, { headers });
     }
 
     return response.data;
   } catch (err) {
     const error = err as AxiosError;
-    console.error(" Ошибка при вызове внешнего API:", error.response?.data || error.message);
+    console.error("Ошибка при вызове внешнего API:", error.response?.data || error.message);
     throw new Error(`External API error: ${JSON.stringify(error.response?.data || error.message)}`);
   }
 }

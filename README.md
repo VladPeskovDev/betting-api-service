@@ -110,11 +110,10 @@ curl -X POST http://localhost:3000/api/internal/check-balance \
 
 13. 
 
-curl -X GET http://localhost:3000/api/internal/bet \
+curl -X GET "http://localhost:3000/api/internal/bet" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {admin_token}" \
-  -d '{
-    "user_id": "5"
-  }'
+  -H "Authorization: Bearer {admin_token}"
 
 
+
+обеспечить идемпотентность операций на POST /api/bets; POST /api/internal/bet; POST /api/internal/balance
