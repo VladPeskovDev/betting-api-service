@@ -23,8 +23,11 @@ export async function processBetWin(req: Request, res: Response, next: NextFunct
       return;
     }
 
+    // **Получаем IP-адрес пользователя**
+    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+
     // Вызываем сервис обработки выигрыша
-    const result = await handleBetWin(user.userId, bet_id);
+    const result = await handleBetWin(user.userId, bet_id, ipAddress.toString());
     res.status(200).json(result);
   } catch (error) {
     console.error("Error in /api/win:", error);

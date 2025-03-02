@@ -1,12 +1,15 @@
-import { prisma } from "../../prisma/client"; 
+import { Request } from "express";
+import { prisma } from "../../prisma/client";
 import * as balanceApiClient from "../api/balanceApiClient";
 
 /**
  * Устанавливаем баланс (и во внешнем API, и у себя в БД).
  */
-export async function setBalanceForUser(userId: number, amount: number) {
+export async function setBalanceForUser(userId: number, amount: number, req: Request) {
+  const ipAddress = req.ip || "unknown"; // Получаем IP-адрес клиента
+
   // Устанавливаем баланс во внешнем сервисе
-  const externalResponse = await balanceApiClient.setBalance(userId, amount);
+  const externalResponse = await balanceApiClient.setBalance(userId, amount, ipAddress);
 
   // Сохраняем/обновляем баланс у себя в таблице userBalance
   const userBalance = await prisma.userBalance.upsert({
@@ -33,9 +36,11 @@ export async function setBalanceForUser(userId: number, amount: number) {
 /**
  * Получаем текущий баланс (и синхронизируем с внешним API).
  */
-export async function getBalanceForUser(userId: number) {
+export async function getBalanceForUser(userId: number, req: Request) {
+  const ipAddress = req.ip || "unknown"; // Получаем IP-адрес клиента
+
   // Запрашиваем баланс у внешнего API
-  const externalBalanceResult = await balanceApiClient.getBalance(userId);
+  const externalBalanceResult = await balanceApiClient.getBalance(userId, ipAddress);
 
   // Обновляем/сохраняем баланс в нашей БД
   const userBalance = await prisma.userBalance.upsert({

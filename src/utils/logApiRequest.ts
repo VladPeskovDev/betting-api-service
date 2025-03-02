@@ -11,16 +11,17 @@ export async function logApiRequest({
   responseBody,
   statusCode,
   requestDuration,
-  ipAddress,
+  ipAddress = "unknown",
 }: {
   userId: number;
   endpoint: string;
   method: string;
-  requestBody: unknown;
-  responseBody: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestBody: any; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  responseBody: any; 
   statusCode: number;
   requestDuration: number;
-  ipAddress: string;
+  ipAddress?: string;
 }) {
   try {
     await prisma.apiLog.create({
@@ -36,8 +37,8 @@ export async function logApiRequest({
       },
     });
 
-    console.log(`📝 API Log recorded: ${method} ${endpoint} (User: ${userId})`);
+    console.log(`API Log ok: ${method} ${endpoint} (User: ${userId})`);
   } catch (error) {
-    console.error("❌ Error saving API log:", error);
+    console.error("Error saving API log:", error);
   }
 }

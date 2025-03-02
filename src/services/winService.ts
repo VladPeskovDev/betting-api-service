@@ -4,8 +4,8 @@ import { checkBetWin } from "../api/winApiClient";
 /**
  * Проверяет результат ставки и обновляет БД.
  */
-export async function handleBetWin(userId: number, betId: string) {
-  
+export async function handleBetWin(userId: number, betId: string, ipAddress: string) {
+  // Проверяем, существует ли ставка
   const bet = await prisma.bet.findFirst({
     where: {
       id: parseInt(betId, 10),
@@ -20,13 +20,12 @@ export async function handleBetWin(userId: number, betId: string) {
     throw new Error("Bet not found");
   }
 
-  // Запрос к внешнему API на проверку выигрыша
-  const winResult = await checkBetWin(userId, bet.externalBetId || bet.id.toString());
+  // **Передаём IP-адрес в запрос**
+  const winResult = await checkBetWin(userId, bet.externalBetId || bet.id.toString(), ipAddress);
   const winAmount = Number(winResult.win) || 0;  
 
   console.log(`Win result from API: ${JSON.stringify(winResult)}`);
 
-  
   await prisma.bet.update({
     where: { id: bet.id },
     data: {
@@ -51,14 +50,12 @@ export async function handleBetWin(userId: number, betId: string) {
 
   console.log(`Updating balance: current=${balanceBefore}, winAmount=${winAmount}, new=${balanceAfter}`);
 
-  // Если выигрыш > 0, обновляем баланс пользователя
   if (winAmount > 0) {
     await prisma.userBalance.update({
       where: { userId },
       data: { balance: balanceAfter },
     });
 
-    // Добавляем запись в историю транзакций с корректными балансами
     await prisma.transaction.create({
       data: {
         userId,

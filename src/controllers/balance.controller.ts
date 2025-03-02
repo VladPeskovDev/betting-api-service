@@ -13,14 +13,15 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const result = await BalanceService.getBalanceForUser(user.userId);
+    // Передаем req в сервис
+    const result = await BalanceService.getBalanceForUser(user.userId, req);
     res.status(200).json(result);
   } catch (error) {
     console.error("Error in getBalance:", error);
     res.status(500).json({
       statusCode: 500,
       error: "Internal Server Error",
-      message: (error as Error).message
+      message: (error as Error).message,
     });
   }
 }
@@ -40,18 +41,18 @@ export async function postBalance(req: Request, res: Response): Promise<void> {
     const { balance } = req.body;
 
     if (typeof balance === "number") {
-      // Устанавливаем баланс
-      const result = await BalanceService.setBalanceForUser(user.userId, balance);
+      // Передаем req в сервис
+      const result = await BalanceService.setBalanceForUser(user.userId, balance, req);
       res.status(200).json({
         message: result.message,
-        balance: result.balance
+        balance: result.balance,
       });
     } else {
-      // Запрашиваем текущий баланс
-      const result = await BalanceService.getBalanceForUser(user.userId);
+      // Передаем req в сервис
+      const result = await BalanceService.getBalanceForUser(user.userId, req);
       res.status(200).json({
         balance: result.balance,
-        last_updated: result.last_updated
+        last_updated: result.last_updated,
       });
     }
   } catch (error) {
@@ -59,7 +60,7 @@ export async function postBalance(req: Request, res: Response): Promise<void> {
     res.status(500).json({
       statusCode: 500,
       error: "Internal Server Error",
-      message: (error as Error).message
+      message: (error as Error).message,
     });
   }
 }
