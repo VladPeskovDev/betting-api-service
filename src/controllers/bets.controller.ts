@@ -74,7 +74,10 @@ export async function createBet(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const newBet = await BetService.createBetForUser(user.userId, amount);
+    const idempotencyKey = req.headers["idempotency-key"] as string | undefined;
+
+    const newBet = await BetService.createBetForUser(user.userId, amount, req.ip || "unknown", idempotencyKey);
+
     res.status(201).json({
       id: newBet.id,
       amount: newBet.amount,
@@ -98,7 +101,7 @@ export async function getRecommendedBet(req: Request, res: Response): Promise<vo
       return;
     }
 
-    const recommended = await BetService.getRecommendedBetAmount(user.userId);
+    const recommended = await BetService.getRecommendedBetAmount(user.userId, req.ip || "unknown");
     res.status(200).json({ recommended_amount: recommended });
   } catch (error) {
     console.error("Error in getRecommendedBet:", error);
@@ -107,8 +110,7 @@ export async function getRecommendedBet(req: Request, res: Response): Promise<vo
 }
 
 /**
- * POST /api/bets/win
- * Проверяет результат ставки, обновляет баланс и статус
+ * POST /api/bets/win (Проверка результата ставки)
  */
 export async function checkBetWin(req: Request, res: Response): Promise<void> {
   try {
@@ -124,7 +126,7 @@ export async function checkBetWin(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const result = await BetService.checkBetResult(user.userId, bet_id);
+    const result = await BetService.checkBetResult(user.userId, bet_id, req.ip || "unknown");
     res.status(200).json(result);
   } catch (error) {
     console.error("Error in checkBetWin:", error);

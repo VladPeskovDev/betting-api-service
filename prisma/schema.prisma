@@ -48,6 +48,7 @@ model Bet {
   amount        Decimal
   status        String
   winAmount     Decimal?
+  idempotencyKey  String?  @unique 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   completedAt   DateTime?

@@ -137,3 +137,13 @@ curl -X POST http://localhost:3000/api/win \
   -d '{
     "bet_id": "6"
   }'
+
+
+Ставить ставку с ключом 
+curl -X POST http://localhost:3000/api/bets \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Idempotency-Key: 123e4567-e89b-12d3-a456-426614174000" \
+  -d '{
+    "amount": 3
+  }'

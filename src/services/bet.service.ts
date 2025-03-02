@@ -27,7 +27,20 @@ export async function getBetById(userId: number, betId: number) {
 /**
  * Размещаем ставку во внешней системе и сохраняем в БД
  */
-export async function createBetForUser(userId: number, amount: number) {
+export async function createBetForUser(userId: number, amount: number, ipAddress: string, idempotencyKey?: string) {
+  // Если передан идемпотентный ключ, проверяем, есть ли уже такая ставка
+  if (idempotencyKey) {
+    const existingBet = await prisma.bet.findUnique({
+      where: { idempotencyKey },
+    });
+
+    if (existingBet) {
+      console.log(`Returning existing bet with idempotencyKey=${idempotencyKey}`);
+      return existingBet; // Возвращаем уже созданную ставку, если она есть
+    }
+  }
+
+  // Получаем баланс пользователя
   const userBalance = await prisma.userBalance.findUnique({
     where: { userId },
   });
@@ -41,31 +54,36 @@ export async function createBetForUser(userId: number, amount: number) {
     throw new Error("Insufficient balance");
   }
 
-  // Вызываем API с ID пользователя из БД
-  const placeBetResult = await betApiClient.placeBet(userId, amount);
+  // Вызываем внешний API для размещения ставки
+  const placeBetResult = await betApiClient.placeBet(userId, amount, ipAddress);
+
   const newBalance = new Decimal(currentBalance - amount);
 
+  // Создаем новую ставку
   const newBet = await prisma.bet.create({
     data: {
       userId,
       externalBetId: placeBetResult.bet_id.toString(),
       amount,
       status: "pending",
+      idempotencyKey, // Сохраняем идемпотентный ключ, если он был передан
     },
   });
 
+  // Фиксируем транзакцию
   await prisma.transaction.create({
     data: {
       userId,
       betId: newBet.id,
       type: "bet_place",
-      amount: amount,
+      amount,
       balanceBefore: currentBalance,
       balanceAfter: newBalance.toNumber(),
       description: `User placed bet #${newBet.id}`,
     },
   });
 
+  // Обновляем баланс пользователя
   await prisma.userBalance.update({
     where: { userId },
     data: { balance: newBalance },
@@ -77,15 +95,15 @@ export async function createBetForUser(userId: number, amount: number) {
 /**
  * Получаем рекомендуемый размер ставки из внешнего API
  */
-export async function getRecommendedBetAmount(userId: number): Promise<number> {
-  const data = await betApiClient.getRecommendedBet(userId);
+export async function getRecommendedBetAmount(userId: number, ipAddress: string): Promise<number> {
+  const data = await betApiClient.getRecommendedBet(userId, ipAddress);
   return data.bet;
 }
 
 /**
  * Запрашивает результат ставки, обновляет баланс и статус
  */
-export async function checkBetResult(userId: number, betId: string) {
+export async function checkBetResult(userId: number, betId: string, ipAddress: string) {
   const bet = await prisma.bet.findFirst({
     where: { externalBetId: betId, userId },
   });
@@ -98,13 +116,14 @@ export async function checkBetResult(userId: number, betId: string) {
     throw new Error("Bet already settled");
   }
 
-  const result = await betApiClient.checkBetResult(userId, betId);
+  const result = await betApiClient.checkBetResult(userId, betId, ipAddress);
 
   let winAmount = new Decimal(0);
   if (result.win) {
     winAmount = new Decimal(result.amount);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updatedBet = await prisma.bet.update({
     where: { id: bet.id },
     data: {

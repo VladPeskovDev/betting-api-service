@@ -20,7 +20,13 @@ export async function handleBetWin(userId: number, betId: string, ipAddress: str
     throw new Error("Bet not found");
   }
 
-  // **Передаём IP-адрес в запрос**
+  //Проверка что не играли эту ставку
+  if (bet.status !== "pending") {
+    //console.log(`Bet ${bet.id} has already been processed with status: ${bet.status}`);
+    throw new Error(`Ставка ${bet.id} имеет статус: ${bet.status}`);
+  }
+
+  // Передаём IP в запрос
   const winResult = await checkBetWin(userId, bet.externalBetId || bet.id.toString(), ipAddress);
   const winAmount = Number(winResult.win) || 0;  
 
@@ -35,7 +41,7 @@ export async function handleBetWin(userId: number, betId: string, ipAddress: str
     },
   });
 
-  // Получаем текущий баланс пользователя
+  // Получаем баланс юзера
   const userBalance = await prisma.userBalance.findUnique({
     where: { userId },
   });
