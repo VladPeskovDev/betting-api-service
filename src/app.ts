@@ -13,6 +13,7 @@ import winRoutes from "./routes/winRoutes";
 dotenv.config();
 const app = express();
 
+
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -26,5 +27,6 @@ app.use("/api/transactions", transactionsRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/internal", internalRouter);
 app.use("/api/win", winRoutes);
+
 
 export default app;

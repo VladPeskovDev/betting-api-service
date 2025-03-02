@@ -5,7 +5,7 @@ import { checkBetWin } from "../api/winApiClient";
  * Проверяет результат ставки и обновляет БД.
  */
 export async function handleBetWin(userId: number, betId: string) {
-  // Проверяем, существует ли ставка
+  
   const bet = await prisma.bet.findFirst({
     where: {
       id: parseInt(betId, 10),
@@ -20,11 +20,13 @@ export async function handleBetWin(userId: number, betId: string) {
     throw new Error("Bet not found");
   }
 
-  // Запрос к внешнему API
+  // Запрос к внешнему API на проверку выигрыша
   const winResult = await checkBetWin(userId, bet.externalBetId || bet.id.toString());
-  const winAmount = winResult.win || 0;
+  const winAmount = Number(winResult.win) || 0;  
 
-  // Обновляем статус ставки
+  console.log(`Win result from API: ${JSON.stringify(winResult)}`);
+
+  
   await prisma.bet.update({
     where: { id: bet.id },
     data: {
@@ -34,22 +36,37 @@ export async function handleBetWin(userId: number, betId: string) {
     },
   });
 
+  // Получаем текущий баланс пользователя
+  const userBalance = await prisma.userBalance.findUnique({
+    where: { userId },
+  });
+
+  if (!userBalance) {
+    console.log("User balance record not found!");
+    throw new Error("User balance record not found");
+  }
+
+  const balanceBefore = Number(userBalance.balance);  
+  const balanceAfter = balanceBefore + winAmount;  
+
+  console.log(`Updating balance: current=${balanceBefore}, winAmount=${winAmount}, new=${balanceAfter}`);
+
   // Если выигрыш > 0, обновляем баланс пользователя
   if (winAmount > 0) {
     await prisma.userBalance.update({
       where: { userId },
-      data: { balance: { increment: winAmount } },
+      data: { balance: balanceAfter },
     });
 
-    // Добавляем запись в историю транзакций
+    // Добавляем запись в историю транзакций с корректными балансами
     await prisma.transaction.create({
       data: {
         userId,
         betId: bet.id,
         type: "win",
         amount: winAmount,
-        balanceBefore: bet.amount,
-        balanceAfter: bet.amount + winAmount,
+        balanceBefore,
+        balanceAfter,
         description: `User won ${winAmount} from bet #${bet.id}`,
       },
     });
