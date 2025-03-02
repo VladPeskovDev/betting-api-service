@@ -1,9 +1,13 @@
 # betting-api-service
 
+--------->Аутентификация<-----------
+
 0. http://localhost:3000/api/auth/signin
    {
    "username": "Vladislav"
    } аутентификация
+
+   ----------->Управление ставками<----------
 
 1. Получаем ставки
    curl -X GET http://localhost:3000/api/bets \
@@ -35,6 +39,7 @@
     -d '{
    "balance": 1000
    }'
+----------->Управление балансом<---------------
 
 5. Получить баланс 
    curl -X POST http://localhost:3000/api/balance \
@@ -51,6 +56,13 @@
 curl -X GET "http://localhost:3000/api/transactions?page=1&limit=2" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <ваш-токен>"
+
+
+7. Проверка работоспособности сервиса
+
+curl -X GET "http://localhost:3000/api/health" \
+  -H "Content-Type: application/json"
+
 
 ------------>Admin<-------------
 
