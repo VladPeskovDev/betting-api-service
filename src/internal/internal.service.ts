@@ -17,7 +17,6 @@ export async function testGetBet() {
   };
 }
 
-
 /**
  * 3) Тест размещения ставки: POST /api/internal/bet
  */

@@ -12,7 +12,7 @@ const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.co
  */
 async function getAdminCredentials() {
   const adminCredentials = await prisma.externalApiAccount.findUnique({
-    where: { userId: 2 }, // Берем данные только для админа (userId = 2)
+    where: { userId: 2 }, 
   });
 
   if (!adminCredentials) {

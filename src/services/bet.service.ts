@@ -81,3 +81,69 @@ export async function getRecommendedBetAmount(userId: number): Promise<number> {
   const data = await betApiClient.getRecommendedBet(userId);
   return data.bet;
 }
+
+/**
+ * Запрашивает результат ставки, обновляет баланс и статус
+ */
+export async function checkBetResult(userId: number, betId: string) {
+  const bet = await prisma.bet.findFirst({
+    where: { externalBetId: betId, userId },
+  });
+
+  if (!bet) {
+    throw new Error("Bet not found");
+  }
+
+  if (bet.status !== "pending") {
+    throw new Error("Bet already settled");
+  }
+
+  const result = await betApiClient.checkBetResult(userId, betId);
+
+  let winAmount = new Decimal(0);
+  if (result.win) {
+    winAmount = new Decimal(result.amount);
+  }
+
+  const updatedBet = await prisma.bet.update({
+    where: { id: bet.id },
+    data: {
+      status: result.win ? "won" : "lost",
+      winAmount: winAmount.toNumber(),
+      completedAt: new Date(),
+    },
+  });
+
+  const userBalance = await prisma.userBalance.findUnique({
+    where: { userId },
+  });
+
+  if (!userBalance) {
+    throw new Error("User balance not found");
+  }
+
+  const newBalance = new Decimal(userBalance.balance).plus(winAmount);
+
+  await prisma.userBalance.update({
+    where: { userId },
+    data: { balance: newBalance },
+  });
+
+  await prisma.transaction.create({
+    data: {
+      userId,
+      betId: bet.id,
+      type: result.win ? "bet_win" : "bet_loss",
+      amount: winAmount.toNumber(),
+      balanceBefore: userBalance.balance,
+      balanceAfter: newBalance.toNumber(),
+      description: `Bet ${bet.id} was ${result.win ? "won" : "lost"}`,
+    },
+  });
+
+  return {
+    message: `Bet ${bet.id} ${result.win ? "won" : "lost"}`,
+    balance: newBalance.toNumber(),
+    winAmount: winAmount.toNumber(),
+  };
+}

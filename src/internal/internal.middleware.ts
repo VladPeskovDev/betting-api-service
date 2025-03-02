@@ -9,7 +9,7 @@ export const verifyInternalAdmin: RequestHandler = (req, res, next) => {
   }
 
   if (user.userId !== 2) {
-    res.status(403).json({ error: "Forbidden. Only admin can access internal endpoints." });
+    res.status(403).json({ error: "Доступ запрещен, только для администратора" });
     return;
   }
 

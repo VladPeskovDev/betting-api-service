@@ -13,10 +13,11 @@ import { verifyInternalAdmin } from "./internal.middleware";
 const router = Router();
 
 /**
- * Все эндпоинты: /api/internal/
- * Сначала проверяем JWT (verifyAccessToken),
- * потом проверяем, что userId=2 (verifyInternalAdmin).
+ Все эндпоинты: /api/internal/
+ Сначала проверяем JWT (verifyAccessToken),
+ потом проверяем, что наш user админ.
  */
+
 router.use(verifyAccessToken);
 router.use(verifyInternalAdmin);
 

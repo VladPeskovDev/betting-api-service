@@ -3,7 +3,7 @@ import {
   getUserBets,
   getBetById,
   createBet,
-  getRecommendedBet,
+  getRecommendedBet
 } from "../controllers/bets.controller";
 import { verifyAccessToken } from "../middlewares/verifyTokens";
 
@@ -13,5 +13,6 @@ router.get("/", verifyAccessToken, getUserBets);
 router.get("/recommended", verifyAccessToken, getRecommendedBet);
 router.get("/:id", verifyAccessToken, getBetById);
 router.post("/", verifyAccessToken, createBet);
+
 
 export default router;

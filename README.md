@@ -129,3 +129,11 @@ curl -X GET "http://localhost:3000/api/internal/bet" \
 
 
 обеспечить идемпотентность операций на POST /api/bets; POST /api/internal/bet; POST /api/internal/balance
+
+
+curl -X POST http://localhost:3000/api/win \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <ваш-токен>" \
+  -d '{
+    "bet_id": "6"
+  }'

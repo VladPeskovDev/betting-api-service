@@ -75,7 +75,6 @@ export async function postBalanceTest(req: Request, res: Response): Promise<void
       res.status(400).json({ error: "user_id is required" });
       return;
     }
-    // balance может быть undefined (значит, запросить)
     const result = await InternalService.testBalance(user_id, balance);
     res.status(200).json(result);
   } catch (error) {

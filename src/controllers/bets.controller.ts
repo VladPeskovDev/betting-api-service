@@ -105,3 +105,29 @@ export async function getRecommendedBet(req: Request, res: Response): Promise<vo
     res.status(500).json({ error: "Internal Server Error", message: (error as Error).message });
   }
 }
+
+/**
+ * POST /api/bets/win
+ * Проверяет результат ставки, обновляет баланс и статус
+ */
+export async function checkBetWin(req: Request, res: Response): Promise<void> {
+  try {
+    const user = res.locals.user as { userId?: number };
+    if (!user?.userId) {
+      res.status(401).json({ error: "No userId in token" });
+      return;
+    }
+
+    const { bet_id } = req.body;
+    if (!bet_id) {
+      res.status(400).json({ error: "bet_id is required" });
+      return;
+    }
+
+    const result = await BetService.checkBetResult(user.userId, bet_id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error in checkBetWin:", error);
+    res.status(500).json({ error: "Internal Server Error", message: (error as Error).message });
+  }
+}
