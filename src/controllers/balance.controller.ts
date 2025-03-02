@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import * as BalanceService from "../services/balance.service";
 
-/**
+/*
  * GET /api/balance
- * вернуть текущий баланс из нашей БД (или синхронизировать)
+ * Получить текущий баланс из нашей БД (или синхронизировать)
  */
 export async function getBalance(req: Request, res: Response): Promise<void> {
   try {
@@ -25,10 +25,9 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
   }
 }
 
-/**
- * POST /api/balance
- * Логика: если тело содержит { balance: number }, то устанавливаем,
- * иначе получаем.
+/*
+  POST /api/balance
+  Логика: если тело содержит { balance: number }, то устанавливаем, иначе получаем.
  */
 export async function postBalance(req: Request, res: Response): Promise<void> {
   try {
@@ -41,14 +40,14 @@ export async function postBalance(req: Request, res: Response): Promise<void> {
     const { balance } = req.body;
 
     if (typeof balance === "number") {
-      // 1) Установить баланс
+      // Устанавливаем баланс
       const result = await BalanceService.setBalanceForUser(user.userId, balance);
       res.status(200).json({
         message: result.message,
         balance: result.balance
       });
     } else {
-      // 2) Запросить текущий баланс
+      // Запрашиваем текущий баланс
       const result = await BalanceService.getBalanceForUser(user.userId);
       res.status(200).json({
         balance: result.balance,

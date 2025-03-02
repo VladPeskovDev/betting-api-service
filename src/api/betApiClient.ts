@@ -1,43 +1,58 @@
-import axios, { AxiosError } from 'axios';
-import crypto from 'crypto';
-import dotenv from 'dotenv';
+import axios, { AxiosError } from "axios";
+import crypto from "crypto";
+import dotenv from "dotenv";
+import { prisma } from "../../prisma/client";
 
 dotenv.config();
 
-const BET_API_BASE_URL =
-  process.env.BETTING_API_URL ||
-  'https://bet-provider.coolify.tgapps.cloud/api';
-const USER_ID = process.env.BETTING_USER_ID || '12';
-const SECRET_KEY = process.env.BETTING_SECRET_KEY || 'some-secret-key';
+const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.coolify.tgapps.cloud/api";
 
 /**
- * Создает подпись HMAC SHA-512 для запроса
+ * Создаёт HMAC SHA-512 подпись для запроса
  */
-function createSignature(body: Record<string, unknown> | null): string {
+function createSignature(secretKey: string, body: Record<string, unknown> | null): string {
   const payload = JSON.stringify(body || {});
-  return crypto.createHmac('sha512', SECRET_KEY).update(payload).digest('hex');
+  return crypto.createHmac("sha512", secretKey).update(payload).digest("hex");
+}
+
+/**
+ * Получает API-учетные данные пользователя
+ */
+async function getExternalApiCredentials(userId: number) {
+  const externalAccount = await prisma.externalApiAccount.findUnique({
+    where: { userId },
+  });
+
+  if (!externalAccount) {
+    throw new Error("External API credentials not found");
+  }
+
+  return {
+    externalUserId: externalAccount.externalUserId,
+    secretKey: externalAccount.externalSecretKey,
+  };
 }
 
 /**
  * Размещаем ставку во внешней системе
  */
-export async function placeBet(amount: number) {
+export async function placeBet(userId: number, amount: number) {
+  const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const body = { bet: amount };
-  const signature = createSignature(body);
+  const signature = createSignature(secretKey, body);
 
   try {
     const response = await axios.post(`${BET_API_BASE_URL}/bet`, body, {
       headers: {
-        'user-id': USER_ID,
-        'x-signature': signature,
-        'Content-Type': 'application/json',
+        "user-id": externalUserId,
+        "x-signature": signature,
+        "Content-Type": "application/json",
       },
     });
     return response.data;
   } catch (err) {
     const error = err as AxiosError;
-    console.error('External API error status:', error.response?.status);
-    console.error('External API error data:', error.response?.data);
+    console.error("External API error:", error.response?.data || error.message);
     throw error;
   }
 }
@@ -45,16 +60,22 @@ export async function placeBet(amount: number) {
 /**
  * Получаем рекомендуемую ставку
  */
-export async function getRecommendedBet(): Promise<{ bet: number }> {
-  const signature = createSignature(null);
+export async function getRecommendedBet(userId: number): Promise<{ bet: number }> {
+  const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
+  const signature = createSignature(secretKey, null);
 
-  const response = await axios.get(`${BET_API_BASE_URL}/bet`, {
-    headers: {
-      'user-id': USER_ID,
-      'x-signature': signature,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  return response.data;
+  try {
+    const response = await axios.get(`${BET_API_BASE_URL}/bet`, {
+      headers: {
+        "user-id": externalUserId,
+        "x-signature": signature,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError;
+    console.error("External API error:", error.response?.data || error.message);
+    throw error;
+  }
 }

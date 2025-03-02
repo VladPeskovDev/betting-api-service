@@ -5,12 +5,10 @@ import * as balanceApiClient from "../api/balanceApiClient";
  * Устанавливаем баланс (и во внешнем API, и у себя в БД).
  */
 export async function setBalanceForUser(userId: number, amount: number) {
-  // 1) Устанавливаем баланс во внешнем сервисе
-  const externalResponse = await balanceApiClient.setBalance(amount);
-  
+  // Устанавливаем баланс во внешнем сервисе
+  const externalResponse = await balanceApiClient.setBalance(userId, amount);
 
-  // 2) Сохраняем/обновляем баланс у себя в таблице userBalance (или user_balances).
-  
+  // Сохраняем/обновляем баланс у себя в таблице userBalance
   const userBalance = await prisma.userBalance.upsert({
     where: { userId },
     update: {
@@ -33,14 +31,13 @@ export async function setBalanceForUser(userId: number, amount: number) {
 }
 
 /**
- * Получаем текущий баланс (и синхронизируем с внешним).
+ * Получаем текущий баланс (и синхронизируем с внешним API).
  */
 export async function getBalanceForUser(userId: number) {
-  // 1) Запрашиваем у внешнего API
-  const externalBalanceResult = await balanceApiClient.getBalance();
- 
+  // Запрашиваем баланс у внешнего API
+  const externalBalanceResult = await balanceApiClient.getBalance(userId);
 
-  // 2) Обновляем/сохраняем у себя
+  // Обновляем/сохраняем баланс в нашей БД
   const userBalance = await prisma.userBalance.upsert({
     where: { userId },
     update: {
