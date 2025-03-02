@@ -9,6 +9,7 @@ import transactionsRouter from "./routes/transactions.routes";
 import healthRouter from "./routes/health.routes";
 import internalRouter from "./internal/internal.routes";
 import winRoutes from "./routes/winRoutes";
+import authApiRouter from './routes/authApi';
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/transactions", transactionsRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/internal", internalRouter);
 app.use("/api/win", winRoutes);
+app.use("/api/auth", authApiRouter);
 
 
 export default app;

@@ -43,7 +43,7 @@ model ExternalApiAccount {
 
 model Bet {
   id            Int     @id @default(autoincrement())
-  userId        Int
+  userId        Int    
   externalBetId String
   amount        Decimal
   status        String
@@ -55,6 +55,9 @@ model Bet {
 
   user User @relation(fields: [userId], references: [id])
   transactions Transaction[]
+
+  @@index([userId]) //индекс на id 
+  @@index([status]) //индекс на статус ставки
 }
 
 model Transaction {
@@ -70,6 +73,9 @@ model Transaction {
 
   user User @relation(fields: [userId], references: [id])
   bet  Bet? @relation(fields: [betId], references: [id])
+
+  @@index([userId])
+  
 }
 
 model ApiLog {
