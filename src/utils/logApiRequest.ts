@@ -1,8 +1,7 @@
 import { prisma } from "../../prisma/client";
 
-/**
- * Логирует запросы к внешнему API в таблицу ApiLog.
- */
+// Логирует запросы к внешнему API в таблицу ApiLog.
+ 
 export async function logApiRequest({
   userId,
   endpoint,

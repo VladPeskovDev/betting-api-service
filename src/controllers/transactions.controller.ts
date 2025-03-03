@@ -12,11 +12,11 @@ export async function getTransactions(req: Request, res: Response): Promise<void
       return;
     }
 
-    // Читаем query-параметры ?page=1&limit=10
+    // query-параметры ?page=1&limit=10
     const page = parseInt(req.query.page as string, 10) || 1;
     const limit = parseInt(req.query.limit as string, 10) || 10;
 
-    // Вызываем сервис
+   
     const result = await TransactionService.getTransactionsForUser(user.userId, page, limit);
 
     res.status(200).json({

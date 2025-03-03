@@ -14,7 +14,7 @@ const router = Router();
 
 /**
  Все эндпоинты: /api/internal/
- Сначала проверяем JWT (verifyAccessToken),
+ Сначала проверяем токен (verifyAccessToken),
  потом проверяем, что наш user админ.
  */
 

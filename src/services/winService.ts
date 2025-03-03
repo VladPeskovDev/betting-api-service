@@ -1,11 +1,9 @@
 import { prisma } from "../../prisma/client";
 import { checkBetWin } from "../api/winApiClient";
 
-/**
- * Проверяет результат ставки и обновляет БД.
- */
+// Проверяет результат ставки и обновляет БД.
+ 
 export async function handleBetWin(userId: number, betId: string, ipAddress: string) {
-  // Проверяем, существует ли ставка
   const bet = await prisma.bet.findFirst({
     where: {
       id: parseInt(betId, 10),
@@ -20,13 +18,12 @@ export async function handleBetWin(userId: number, betId: string, ipAddress: str
     throw new Error("Bet not found");
   }
 
-  //Проверка что не играли эту ставку
+  //идемпотентность за счет проверки статуса (два раза одну ставку не играем)
   if (bet.status !== "pending") {
-    //console.log(`Bet ${bet.id} has already been processed with status: ${bet.status}`);
     throw new Error(`Ставка ${bet.id} имеет статус: ${bet.status}`);
   }
 
-  // Передаём IP в запрос
+  
   const winResult = await checkBetWin(userId, bet.externalBetId || bet.id.toString(), ipAddress);
   const winAmount = Number(winResult.win) || 0;  
 

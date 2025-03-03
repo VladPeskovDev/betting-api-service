@@ -1,15 +1,14 @@
 import axios, { AxiosError } from "axios";
 import crypto from "crypto";
 import dotenv from "dotenv";
-import { prisma } from "../../prisma/client"; // Подключаем Prisma
+import { prisma } from "../../prisma/client"; 
 
 dotenv.config();
 
 const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.coolify.tgapps.cloud/api";
 
-/**
- * Функция получения API-ключа и ID админа из БД
- */
+// Функция получения API-ключа и ID админа из БД
+ 
 async function getAdminCredentials() {
   const adminCredentials = await prisma.externalApiAccount.findUnique({
     where: { userId: 2 }, 
@@ -25,27 +24,25 @@ async function getAdminCredentials() {
   };
 }
 
-/**
- * Создаёт HMAC SHA-512 подпись
- */
+// Создаём подпись
+
 function createSignature(body: Record<string, unknown>, secretKey: string): string {
   const payload = JSON.stringify(body);
   return crypto.createHmac("sha512", secretKey).update(payload).digest("hex");
 }
 
-/**
- * Универсальная отправка запросов во внешний API
- */
+// ходим во внешний API
+ 
 async function callExternalApi(
   method: "GET" | "POST",
   endpoint: string,
   data: Record<string, unknown> = {}
 ) {
   try {
-    // Получаем актуальные креды админа из БД
+    // тут получаем актуальные креды админа из БД
     const { userId, secretKey } = await getAdminCredentials();
     
-    // Генерируем подпись
+    // тут генерируем подпись
     const signature = createSignature(method === "GET" ? {} : data, secretKey);
 
     const headers = {

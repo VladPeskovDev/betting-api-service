@@ -2,9 +2,8 @@ import { prisma } from "../../prisma/client";
 import * as betApiClient from "../api/betApiClient";
 import { Decimal } from "@prisma/client/runtime/library";
 
-/**
- * Получаем список ставок пользователя из нашей БД
- */
+// Получаем список ставок пользователя из нашей БД
+ 
 export async function getBetsByUserId(userId: number) {
   return await prisma.bet.findMany({
     where: { userId },
@@ -12,9 +11,8 @@ export async function getBetsByUserId(userId: number) {
   });
 }
 
-/**
- * Получаем одну ставку по её ID (с проверкой, что принадлежит данному пользователю)
- */
+// Получаем одну ставку по её ID (с проверкой, что принадлежит данному пользователю)
+ 
 export async function getBetById(userId: number, betId: number) {
   return await prisma.bet.findFirst({
     where: {
@@ -24,11 +22,9 @@ export async function getBetById(userId: number, betId: number) {
   });
 }
 
-/**
- * Размещаем ставку во внешней системе и сохраняем в БД
- */
+// Размещаем ставку во внешней системе и сохраняем в БД
+ 
 export async function createBetForUser(userId: number, amount: number, ipAddress: string, idempotencyKey?: string) {
-  // Если передан идемпотентный ключ, проверяем, есть ли уже такая ставка
   if (idempotencyKey) {
     const existingBet = await prisma.bet.findUnique({
       where: { idempotencyKey },
@@ -36,7 +32,7 @@ export async function createBetForUser(userId: number, amount: number, ipAddress
 
     if (existingBet) {
       console.log(`Returning existing bet with idempotencyKey=${idempotencyKey}`);
-      return existingBet; // Возвращаем уже созданную ставку, если она есть
+      return existingBet; // Возвращаем  ставку, если она есть
     }
   }
 
@@ -66,7 +62,7 @@ export async function createBetForUser(userId: number, amount: number, ipAddress
       externalBetId: placeBetResult.bet_id.toString(),
       amount,
       status: "pending",
-      idempotencyKey, // Сохраняем идемпотентный ключ, если он был передан
+      idempotencyKey, 
     },
   });
 
@@ -92,17 +88,15 @@ export async function createBetForUser(userId: number, amount: number, ipAddress
   return newBet;
 }
 
-/**
- * Получаем рекомендуемый размер ставки из внешнего API
- */
+// Получаем рекомендуемый размер ставки из внешнего API
+ 
 export async function getRecommendedBetAmount(userId: number, ipAddress: string): Promise<number> {
   const data = await betApiClient.getRecommendedBet(userId, ipAddress);
   return data.bet;
 }
 
-/**
- * Запрашивает результат ставки, обновляет баланс и статус
- */
+// Запрашивает результат ставки, обновляет баланс и статус
+ 
 export async function checkBetResult(userId: number, betId: string, ipAddress: string) {
   const bet = await prisma.bet.findFirst({
     where: { externalBetId: betId, userId },

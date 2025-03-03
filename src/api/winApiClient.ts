@@ -4,16 +4,15 @@ import { logApiRequest } from "../utils/logApiRequest";
 
 const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.coolify.tgapps.cloud/api";
 
-/**
- * Запрашивает результат ставки у внешнего API и логирует запрос.
- */
+// Запрашивает результат ставки у внешнего API и логирует запрос.
+ 
 export async function checkBetWin(userId: number, betId: string, ipAddress: string) {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const body = { bet_id: betId };
   const signature = createSignature(secretKey, body);
   const endpoint = "/win";
 
-  const startTime = Date.now(); // Засекаем время запроса
+  const startTime = Date.now(); // Засекаем время запроса для логов 
 
   try {
     const response = await axios.post(`${BET_API_BASE_URL}${endpoint}`, body, {
@@ -24,9 +23,9 @@ export async function checkBetWin(userId: number, betId: string, ipAddress: stri
       },
     });
 
-    const duration = Date.now() - startTime; // Считаем длительность запроса
+    const duration = Date.now() - startTime; // Считаем длительность запроса для логов 
 
-    // **Логируем успешный запрос**
+    //  успешный запрос
     await logApiRequest({
       userId,
       endpoint,
@@ -44,7 +43,7 @@ export async function checkBetWin(userId: number, betId: string, ipAddress: stri
     const error = err as AxiosError;
     const duration = Date.now() - startTime;
 
-    // **Логируем неудачный запрос**
+    //  неудачный запрос
     await logApiRequest({
       userId,
       endpoint,

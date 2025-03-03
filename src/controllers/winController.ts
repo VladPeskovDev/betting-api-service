@@ -23,7 +23,7 @@ export async function processBetWin(req: Request, res: Response, next: NextFunct
       return;
     }
 
-    // **Получаем IP-адрес пользователя**
+    // Получаем IP-адрес юзера для логов
     const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
 
     // Вызываем сервис обработки выигрыша

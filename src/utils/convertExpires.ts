@@ -1,3 +1,5 @@
+
+//меняем стринг на намбер и переводим в секунды как по тз
 export function convertExpiresToSeconds(input: string): number {
     if (input.endsWith("s")) {
       return parseInt(input.replace("s", ""), 10);

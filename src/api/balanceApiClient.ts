@@ -4,9 +4,9 @@ import { logApiRequest } from "../utils/logApiRequest";
 
 const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.coolify.tgapps.cloud/api";
 
-/**
- * Установить баланс во внешней системе с логированием.
- */
+
+// Установить баланс во внешней системе с логированием.
+ 
 export async function setBalance(userId: number, balance: number, ipAddress: string) {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const body = { balance };
@@ -52,9 +52,8 @@ export async function setBalance(userId: number, balance: number, ipAddress: str
   }
 }
 
-/**
- * Получить текущий баланс во внешней системе с логированием.
- */
+// Получить текущий баланс во внешней системе с логированием.
+ 
 export async function getBalance(userId: number, ipAddress: string) {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const signature = createSignature(secretKey, null);

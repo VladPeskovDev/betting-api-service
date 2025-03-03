@@ -4,9 +4,8 @@ import { logApiRequest } from "../utils/logApiRequest";
 
 const BET_API_BASE_URL = process.env.BETTING_API_URL || "https://bet-provider.coolify.tgapps.cloud/api";
 
-/**
- * Размещаем ставку во внешней системе с логированием.
- */
+// Размещаем ставку во внешней системе с логированием.
+ 
 export async function placeBet(userId: number, amount: number, ipAddress: string) {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const body = { bet: amount };
@@ -31,9 +30,8 @@ export async function placeBet(userId: number, amount: number, ipAddress: string
   }
 }
 
-/**
- * Получаем рекомендуемую ставку с логированием.
- */
+// Получаем рекомендуемую ставку с логированием.
+ 
 export async function getRecommendedBet(userId: number, ipAddress: string): Promise<{ bet: number }> {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const signature = createSignature(secretKey, null);
@@ -57,9 +55,8 @@ export async function getRecommendedBet(userId: number, ipAddress: string): Prom
   }
 }
 
-/**
- * Запрашиваем результат ставки с логированием.
- */
+// Запрашиваем результат ставки с логированием.
+ 
 export async function checkBetResult(userId: number, betId: string, ipAddress: string) {
   const { externalUserId, secretKey } = await getExternalApiCredentials(userId);
   const body = { bet_id: betId };

@@ -13,7 +13,6 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Передаем req в сервис
     const result = await BalanceService.getBalanceForUser(user.userId, req);
     res.status(200).json(result);
   } catch (error) {
@@ -28,7 +27,7 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
 
 /*
   POST /api/balance
-  Логика: если тело содержит { balance: number }, то устанавливаем, иначе получаем.
+  Логика: если тело содержит { balance: number }, то устанавливаем, в противном случае просто получаем баланс.
  */
 export async function postBalance(req: Request, res: Response): Promise<void> {
   try {
@@ -41,14 +40,12 @@ export async function postBalance(req: Request, res: Response): Promise<void> {
     const { balance } = req.body;
 
     if (typeof balance === "number") {
-      // Передаем req в сервис
       const result = await BalanceService.setBalanceForUser(user.userId, balance, req);
       res.status(200).json({
         message: result.message,
         balance: result.balance,
       });
     } else {
-      // Передаем req в сервис
       const result = await BalanceService.getBalanceForUser(user.userId, req);
       res.status(200).json({
         balance: result.balance,
