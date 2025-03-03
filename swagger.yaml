@@ -4,12 +4,8 @@ info:
   description: API для ставок и управления балансом
   version: 1.0.0
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3000/api-docs/
     description: Local development server
-  - url: https://bet-provider.coolify.tgapps.cloud
-    description: Production сервер
-  - url: https://virtserver.swaggerhub.com/prolatnatala/bets/1.0.0
-    description: SwaggerHub API Auto Mocking
 security:
   - BearerAuth: []
 tags:
