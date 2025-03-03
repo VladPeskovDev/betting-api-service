@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker  
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=betting_service
+      - POSTGRES_USER=vladislav
+      - POSTGRES_PASSWORD=0707
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  db-data:

@@ -28,7 +28,7 @@ app.use("/api/transactions", transactionsRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/internal", internalRouter);
 app.use("/api/win", winRoutes);
-app.use("/api/auth", authApiRouter);
+app.use("/api/authOut", authApiRouter);
 
 
 export default app;
