@@ -43,7 +43,7 @@ docker-compose up --build <-------Сборка и запуск
 docker-compose down <-------Остановка контейнеров
 docker-compose up <-------Повторный запуск
 
-Для Аутентификации и получения токена, который необходим для теста каждого endpointa использовать
+Для Аутентификации и получения токена, который необходим для теста каждого endpointa использовать пользователей который сидами внесены в бд это:
 
 {
 "username": "Vladislav"
@@ -63,9 +63,9 @@ docker-compose up <-------Повторный запуск
    http://localhost:3000/api/auth/login
    {
    "username": "Vladislav"
-   }
+   }          (Можно тестировать через Thunder Client или Postman)
 
-1. В стороннем сервисе по API
+1. В стороннем сервисе по API   (Примеры тестирования через curl везде нужно добавлять токен полученный при аутентификации)
 
    curl -X POST http://localhost:3000/api/authOut \
    -H "Content-Type: application/json" \
