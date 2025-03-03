@@ -1,0 +1,653 @@
+openapi: 3.0.0
+info:
+  title: Betting API
+  description: API для ставок и управления балансом
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://bet-provider.coolify.tgapps.cloud
+    description: Production сервер
+  - url: https://virtserver.swaggerhub.com/prolatnatala/bets/1.0.0
+    description: SwaggerHub API Auto Mocking
+security:
+  - BearerAuth: []
+tags:
+  - name: "Аутентификация"
+    description: Эндпоинты для авторизации пользователей
+  - name: "Управление ставками"
+    description: Эндпоинты для работы со ставками
+  - name: "Управление балансом"
+    description: Управление балансом пользователя
+  - name: "Дополнительные эндпоинты"
+    description: Эндпоинты для проверки сервиса
+  - name: "Внутренние эндпоинты"
+    description: Эти эндпоинты должны быть защищены и доступны только для тестирования интеграции с API ставок.
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Аутентификация
+      summary: Аутентификация пользователя
+      description: Получение JWT-токена
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user1"
+      responses:
+        "200":
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI..."
+                  expiresIn:
+                    type: integer
+                    example: 3600
+        "404":
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: "Not Found"
+                  message:
+                    type: string
+                    example: "User not found"
+  /api/bets:
+    get:
+      tags:
+        - Управление ставками
+      summary: Получение истории ставок пользователя
+      description: Возвращает список ставок
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "123"
+                        amount:
+                          type: number
+                          example: 3
+                        status:
+                          type: string
+                          example: "completed"
+                        win_amount:
+                          type: number
+                          example: 6
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2023-06-15T10:30:00Z"
+                        completed_at:
+                          type: string
+                          format: date-time
+                          example: "2023-06-15T10:31:00Z"
+    post:
+      tags:
+        - Управление ставками
+      summary: Размещение новой ставки
+      description: Этот запрос **идемпотентен**. Используйте Idempotency-Key для предотвращения дублирования.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "12345-abcdef-67890"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 3
+      responses:
+        "201":
+          description: Ставка успешно размещена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "125"
+                  amount:
+                    type: number
+                    example: 3
+                  status:
+                    type: string
+                    example: "pending"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2023-06-15T12:30:00Z"
+  /api/bets/{id}:
+    get:
+      tags: 
+        - Управление ставками
+      summary: Получение информации о конкретной ставке
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "123"
+      responses:
+        "200":
+          description: Детали ставки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123"
+                  amount:
+                    type: number
+                    example: 3
+                  status:
+                    type: string
+                    example: "completed"
+                  win_amount:
+                    type: number
+                    example: 6
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2023-06-15T10:30:00Z"
+                  completed_at:
+                    type: string
+                    format: date-time
+                    example: "2023-06-15T10:31:00Z"   
+  /api/bets/recommended:
+    get:
+      tags:
+        - Управление ставками
+      summary: Получение рекомендуемой ставки
+      description: Возвращает рекомендуемую сумму ставки на основе алгоритма.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommended_amount:
+                    type: number
+                    example: 3  
+  /api/win:
+    post:
+      tags:
+        - Управление ставками
+      summary: Получение результата ставки
+      description: Запрашивает результат ставки в API. В зависимости от результата пользователь может выиграть или проиграть.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bet_id:
+                  type: string
+                  example: "6"
+      responses:
+        "200":
+          description: Результат ставки успешно получен
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      win:
+                        type: number
+                        example: 0
+                      message:
+                        type: string
+                        example: "Sorry, you lost. Try again!"
+                  - type: object
+                    properties:
+                      win:
+                        type: number
+                        example: 6
+                      message:
+                        type: string
+                        example: "Congratulations! You won!"      
+  /api/transactions:
+    get:
+      tags:
+        - Управление балансом
+      summary: Получение истории транзакций
+      description: Возвращает список транзакций пользователя с пагинацией.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (опционально)
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          description: Количество записей на странице (опционально)
+          schema:
+            type: integer
+            example: 10
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "789"
+                        type:
+                          type: string
+                          example: "bet_win"
+                        amount:
+                          type: number
+                          example: 6
+                        balance_before:
+                          type: number
+                          example: 1000
+                        balance_after:
+                          type: number
+                          example: 1006
+                        description:
+                          type: string
+                          example: "Win amount for bet #123"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2023-06-15T10:31:00Z"
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 15
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      pages:
+                        type: integer
+                        example: 2      
+  /api/balance:
+    get:
+      tags:
+        - Управление балансом
+      summary: Получение текущего баланса пользователя
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Баланс пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                    example: 1150
+                  last_updated:
+                    type: string
+                    format: date-time
+                    example: "2023-06-15T12:30:00Z"     
+  /api/health:
+    get:
+      tags:
+        - Дополнительные эндпоинты
+      summary: Проверка работоспособности сервиса
+      description: Возвращает статус работы сервиса и его компонентов.
+      responses:
+        "200":
+          description: Сервис работает исправно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2023-06-15T12:00:00Z"
+                  services:
+                    type: object
+                    properties:
+                      api:
+                        type: string
+                        example: "ok"
+                      database:
+                        type: string
+                        example: "ok"
+                      external_api:
+                        type: string
+                        example: "ok"  
+  /api/internal/auth:
+    post:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование аутентификации в API ставок
+      description: Выполняет тестовую аутентификацию пользователя в системе ставок.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "5"
+      responses:
+        "200":
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  external_response:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Successfully authenticated"
+                      user_id:
+                        type: string
+                        example: "5"
+                      username:
+                        type: string
+                        example: "user5"               
+  /api/internal/bet:
+    get:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование получения рекомендуемой ставки от API
+      description: Возвращает рекомендуемую сумму ставки для указанного пользователя.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Успешный запрос, возвращает рекомендуемую ставку
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  external_response:
+                    type: object
+                    properties:
+                      bet:
+                        type: number
+                        example: 3
+    post:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование размещения ставки в API
+      description: Размещает тестовую ставку в API. 
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "5"
+                bet:
+                  type: number
+                  example: 3
+      responses:
+        "200":
+          description: Ставка успешно размещена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  external_response:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Bet placed successfully"
+                      bet_id:
+                        type: string
+                        example: "456"
+  /api/internal/win:
+    post:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование получения результата ставки от API
+      description: Запрашивает результат тестовой ставки в API.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "5"
+                bet_id:
+                  type: string
+                  example: "456"
+      responses:
+        "200":
+          description: Результат ставки успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  external_response:
+                    type: object
+                    properties:
+                      win:
+                        type: number
+                        example: 6
+                      message:
+                        type: string
+                        example: "Congratulations! You won!"     
+  /api/internal/balance:
+    post:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование установки/получения баланса от API
+      description: Устанавливает или получает баланс пользователя в API. 
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "5"
+                balance:
+                  type: number
+                  example: 1000
+                  description: "Если передано — баланс будет установлен (идемпотентный запрос). Если отсутствует — баланс будет получен."
+      responses:
+        "200":
+          description: Баланс успешно установлен или получен
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      external_response:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: "Balance set successfully"
+                          balance:
+                            type: number
+                            example: 1000
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      external_response:
+                        type: object
+                        properties:
+                          balance:
+                            type: number
+                            example: 1006
+  /api/internal/check-balance:
+    post:
+      tags:
+        - Внутренние эндпоинты
+      summary: Тестирование проверки баланса в API
+      description: Проверяет, соответствует ли баланс пользователя ожидаемому значению.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "5"
+                expected_balance:
+                  type: number
+                  example: 1006
+      responses:
+        "200":
+          description: Баланс успешно проверен
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      external_response:
+                        type: object
+                        properties:
+                          is_correct:
+                            type: boolean
+                            example: true
+                          balance:
+                            type: number
+                            example: 1006
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      external_response:
+                        type: object
+                        properties:
+                          is_correct:
+                            type: boolean
+                            example: false
+                          message:
+                            type: string
+                            example: "Incorrect balance. Expected: 1010, Actual: 1006"
+                          correct_balance:
+                            type: number
+                            example: 1006                                                                                                                                                                                           
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

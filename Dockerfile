@@ -15,6 +15,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Копируем Swagger файл для документации API
+COPY swagger.yaml /app/swagger.yaml
+
 
 ENV DATABASE_URL=$DATABASE_URL
 ENV ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET

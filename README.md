@@ -54,7 +54,7 @@ docker-compose up <-------Повторный запуск
 } <------ пользователь с правами администратора (тело запроса)
 
 
-документацию по API (Swagger)     ------>   https://app.swaggerhub.com/apis-docs/prolatnatala/bets/1.0.0#/
+документацию по API (Swagger)     ------>   http://localhost:3000/api-docs    (при запущенном сервере)
 
 --------->Аутентификация<-----------
 
@@ -291,3 +291,7 @@ balances — баланс пользователей.
    Безопасность опеспечена:
    Проверка JWT-токена (verifyAccessToken) → в res.locals.user сохраняется userId.
    Проверка, что userId совпадает с ID админа, который хранится в сидовых данных.
+
+
+
+http://localhost:3000/api-docs

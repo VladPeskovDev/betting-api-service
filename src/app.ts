@@ -10,6 +10,7 @@ import healthRouter from "./routes/health.routes";
 import internalRouter from "./internal/internal.routes";
 import winRoutes from "./routes/winRoutes";
 import authApiRouter from './routes/authApi';
+import { setupSwagger } from './config/swagger';
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+setupSwagger(app);
 
 
 app.use("/api/auth", authRouter);
