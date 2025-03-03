@@ -75,10 +75,13 @@ docker-compose up <-------Повторный запуск
    ----------->Управление ставками<----------
 
 2. Получаем все ставки (история ставок)
+
    curl -X GET http://localhost:3000/api/bets \
    -H "Content-Type: application/json" \
    -H "Authorization: Bearer eyJhbGciOiJIUzI1Ni..."
+
 3. Получение ставки по id
+
    curl -X GET http://localhost:3000/api/bets/:id \
    -H "Content-Type: application/json" \
    -H "Authorization: Bearer eyJhbGciOiJIUzI1Ni..."
@@ -109,6 +112,7 @@ docker-compose up <-------Повторный запуск
 ----------->Управление балансом<---------------
 
 7. Установить баланс
+
    curl -X POST http://localhost:3000/api/balance \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <TOKEN>" \
@@ -117,10 +121,12 @@ docker-compose up <-------Повторный запуск
    }'
 
 8. Получить баланс
+
    curl -X POST http://localhost:3000/api/balance \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <TOKEN>" \
     -d '{}'
+
    либо
 
    curl -X GET http://localhost:3000/api/balance \
@@ -128,6 +134,7 @@ docker-compose up <-------Повторный запуск
     -H "Authorization: Bearer <TOKEN>"
 
 9. История Транзакций
+
    curl -X GET "http://localhost:3000/api/transactions?page=1&limit=2" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <ваш-токен>"
